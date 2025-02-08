@@ -71,6 +71,7 @@ for data in scoutingData:
             if scoutName in scouterAccuraciesRaw: scouterAccuraciesRaw[scoutName].append(estimatedAccuracy)
             else: scouterAccuraciesRaw[scoutName] = [estimatedAccuracy]
 
-for scouter in scouterAccuraciesRaw: scouterAccuraciesAvg[scouter] = sum(scouterAccuraciesRaw[scouter]) / len(scouterAccuraciesRaw[scouter])
+    alliancePerMatchAcc[matchNum - 1]['blue'] = blueAllianceAccuracy
+    alliancePerMatchAcc[matchNum - 1]['red'] = redAllianceAccuracy
 
-print(scouterAccuraciesAvg)
+for scouter in scouterAccuraciesRaw: scouterAccuraciesAvg[scouter] = sum(scouterAccuraciesRaw[scouter]) / len(scouterAccuraciesRaw[scouter])
