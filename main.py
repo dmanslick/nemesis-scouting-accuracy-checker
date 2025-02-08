@@ -33,11 +33,19 @@ for data in scoutingData:
 
     matchNum = int(data[0]['matchNum'])
 
-    blueAllianceOPR = tbaWrapper.getBlueAllianceOPR(matchNum)
-    redAllianceOPR = tbaWrapper.getRedAllianceOPR(matchNum)
-    blueAllianceTeamNums = tbaWrapper.getBlueAllianceTeamNums(matchNum)
-    redAllianceTeamNums = tbaWrapper.getRedAllianceTeamNums(matchNum)
+    blueAllianceOPR = tbaWrapper.getAllianceOPR(matchNum, 'blue')
+    redAllianceOPR = tbaWrapper.getAllianceOPR(matchNum, 'red')
+    blueAllianceTeamNums = tbaWrapper.getAllianceTeamNums(matchNum, 'blue')
+    redAllianceTeamNums = tbaWrapper.getAllianceTeamNums(matchNum, 'red')
     
     scoutingDataWrapper = MatchScoutingDataWrapper(redAllianceTeamNums, blueAllianceTeamNums, data)
     
+    redAllianceAccuracy = scoutingDataWrapper.redAllianceTotalGamePieces / tbaWrapper.getAllianceTotalGamePieces(matchNum, 'red')
+    blueAllianceAccuracy = scoutingDataWrapper.blueAllianceTotalGamePieces / tbaWrapper.getAllianceTotalGamePieces(matchNum, 'blue')
     
+    print(scoutingDataWrapper.redAllianceTotalAmpAuto)
+    print("Match Number:", matchNum)
+    print("Red Alliance Accuracy: " + str(round(redAllianceAccuracy * 100, 3)) + "%")
+    print("Blue Alliance Accuracy: " +  str(round(blueAllianceAccuracy * 100, 3)) + "%")
+    print()
+

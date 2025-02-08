@@ -50,19 +50,28 @@ class TBAWrapper:
     def getAllianceSpkrCountTeleop(self, matchNum: int, alliance: Literal['blue', 'red']) -> int: 
         return self.getAllianceScoreBreakdown(matchNum, alliance)['teleopSpeakerNoteCount'] + self.getAllianceScoreBreakdown(matchNum, alliance)['teleopSpeakerNoteAmplifiedCount']
 
+    def getAllianceTotalGamePieces(self, matchNum: int, alliance: Literal['blue', 'red']) -> int:
+        return self.getAllianceAmpCountAuto(matchNum, alliance) + self.getAllianceSpkrCountAuto(matchNum, alliance) + self.getAllianceAmpCountTeleop(matchNum, alliance) + self.getAllianceSpkrCountTeleop(matchNum, alliance)
+
 class MatchScoutingDataWrapper:
-    def __init__(self, redAllianceTeamNums, blueAllianceTeamNums, data): 
-        self.redAllianceRawData = list(filter(lambda x: str(x['teamNum']).strip().isdigit() and int(x['teamNum']) not in redAllianceTeamNums, data))
-        self.blueAllianceRawData = list(filter(lambda x: str(x['teamNum']).strip().isdigit() and int(x['teamNum']) not in blueAllianceTeamNums, data))
+    def getAllianceTotal(self, gamePiece: str, alliance: Literal['blue', 'red']) -> int: 
+        return sum(int(item[gamePiece]) for item in (self.redAllianceRawData if alliance == 'red' else self.blueAllianceRawData))
         
-        self.scoutedRedAllianceTotalAmpAuto = sum(int(item['ampMade_atn']) for item in self.redAllianceRawData)
-        self.scoutedBlueAllianceTotalAmpAuto = sum(int(item['ampMade_atn']) for item in self.blueAllianceRawData)
+    def __init__(self, redAllianceTeamNums, blueAllianceTeamNums, data): 
+        self.redAllianceRawData = list(filter(lambda x: str(x['teamNum']).strip().isdigit() and int(x['teamNum']) in redAllianceTeamNums, data))
+        self.blueAllianceRawData = list(filter(lambda x: str(x['teamNum']).strip().isdigit() and int(x['teamNum']) in blueAllianceTeamNums, data))
+        
+        self.redAllianceTotalAmpAuto = self.getAllianceTotal('ampMade_atn', 'red')
+        self.blueAllianceTotalAmpAuto = self.getAllianceTotal('ampMade_atn', 'blue')
 
-        self.scoutedRedAllianceTotalSpkrAuto = sum(int(item['spkrMade_atn']) for item in self.redAllianceRawData)
-        self.scoutedBlueAllianceTotalSpkrAuto = sum(int(item['spkrMade_atn']) for item in self.blueAllianceRawData)
+        self.redAllianceTotalSpkrAuto = self.getAllianceTotal('spkrMade_atn', 'red')
+        self.blueAllianceTotalSpkrAuto = self.getAllianceTotal('spkrMade_atn', 'blue')
 
-        self.scoutedRedAllianceTotalAmpTeleop = sum(int(item['ampMade_teleop']) for item in self.redAllianceRawData)
-        self.scoutedBlueAllianceTotalAmpTeleop = sum(int(item['ampMade_teleop']) for item in self.blueAllianceRawData)
+        self.redAllianceTotalAmpTeleop = self.getAllianceTotal('ampMade_tp', 'red')
+        self.blueAllianceTotalAmpTeleop = self.getAllianceTotal('ampMade_tp', 'blue')
 
-        self.scoutedRedAllianceTotalSpkrTeleop = sum(int(item['spkrMade_teleop']) for item in self.redAllianceRawData)
-        self.scoutedBlueAllianceTotalSpkrTeleop = sum(int(item['spkrMade_teleop']) for item in self.blueAllianceRawData)
+        self.redAllianceTotalSpkrTeleop = self.getAllianceTotal('spkrMade_tp', 'red')
+        self.blueAllianceTotalSpkrTeleop = self.getAllianceTotal('spkrMade_tp', 'blue')
+        
+        self.redAllianceTotalGamePieces = self.redAllianceTotalAmpAuto + self.redAllianceTotalSpkrAuto + self.redAllianceTotalAmpTeleop + self.redAllianceTotalSpkrTeleop
+        self.blueAllianceTotalGamePieces = self.blueAllianceTotalAmpAuto + self.blueAllianceTotalSpkrAuto + self.blueAllianceTotalAmpTeleop + self.blueAllianceTotalSpkrTeleop
