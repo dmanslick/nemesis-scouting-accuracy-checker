@@ -63,7 +63,7 @@ class ScoreBreakdown(TypedDict):
 
 class MatchData(TypedDict):
     actual_time: int
-    alliances: Dict[str, Alliance]
+    alliances: Dict[Literal["blue", "red"], Alliance]
     comp_level: str
     event_key: str
     key: str
