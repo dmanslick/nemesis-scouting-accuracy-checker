@@ -16,7 +16,7 @@ tbaWrapper = TBAWrapper(compKey, os.getenv('TBA_KEY'))
 lastMatchNum = tbaWrapper.lastMatchNum
 
 scoutingData = [[] for _ in range(lastMatchNum)]
-scouterAccuraciesRaw = [[] for _ in range(lastMatchNum)]
+scouterAccuraciesRaw = {}
 scouterAccuraciesAvg = {}
 alliancePerMatchAcc = [{"blue": 0, "red": 0} for _ in range(lastMatchNum)]
 
@@ -40,12 +40,36 @@ for data in scoutingData:
     
     scoutingDataWrapper = MatchScoutingDataWrapper(redAllianceTeamNums, blueAllianceTeamNums, data)
     
-    redAllianceAccuracy = scoutingDataWrapper.redAllianceTotalGamePieces / tbaWrapper.getAllianceTotalGamePieces(matchNum, 'red')
-    blueAllianceAccuracy = scoutingDataWrapper.blueAllianceTotalGamePieces / tbaWrapper.getAllianceTotalGamePieces(matchNum, 'blue')
-    
-    print(scoutingDataWrapper.redAllianceTotalAmpAuto)
-    print("Match Number:", matchNum)
-    print("Red Alliance Accuracy: " + str(round(redAllianceAccuracy * 100, 3)) + "%")
-    print("Blue Alliance Accuracy: " +  str(round(blueAllianceAccuracy * 100, 3)) + "%")
-    print()
+    redAllianceTotalGamePieces = tbaWrapper.getAllianceTotalGamePieces(matchNum, 'red')
+    blueAllianceTotalGamePieces = tbaWrapper.getAllianceTotalGamePieces(matchNum, 'blue')
 
+    redAllianceAccuracy = scoutingDataWrapper.redAllianceTotalGamePieces / redAllianceTotalGamePieces
+    blueAllianceAccuracy = scoutingDataWrapper.blueAllianceTotalGamePieces / blueAllianceTotalGamePieces
+
+    for scoutData in scoutingDataWrapper.blueAllianceRawData:
+        if str(scoutData['teamNum']).strip().isdigit():
+            teamNum = int(str(scoutData['teamNum']).strip())
+            teamOPR = tbaWrapper.getOPR(teamNum)
+            robotEstimate = int((tbaWrapper.getOPR(teamNum) / blueAllianceOPR) * blueAllianceTotalGamePieces)
+            teamTotalGamePieces = scoutingDataWrapper.getTeamTotalGamePieces(teamNum)
+            estimatedInaccuracy = abs(robotEstimate - teamTotalGamePieces) / abs(blueAllianceTotalGamePieces + scoutingDataWrapper.blueAllianceTotalGamePieces)
+            estimatedAccuracy = 1 - estimatedInaccuracy
+            scoutName = scoutData['scoutName']
+            if scoutName in scouterAccuraciesRaw: scouterAccuraciesRaw[scoutName].append(estimatedAccuracy)
+            else: scouterAccuraciesRaw[scoutName] = [estimatedAccuracy]
+
+    for scoutData in scoutingDataWrapper.redAllianceRawData:
+        if str(scoutData['teamNum']).strip().isdigit():
+            teamNum = int(str(scoutData['teamNum']).strip())
+            teamOPR = tbaWrapper.getOPR(teamNum)
+            robotEstimate = int((tbaWrapper.getOPR(teamNum) / redAllianceOPR) * redAllianceTotalGamePieces)
+            teamTotalGamePieces = scoutingDataWrapper.getTeamTotalGamePieces(teamNum)
+            estimatedInaccuracy = abs(robotEstimate - teamTotalGamePieces) / abs(redAllianceTotalGamePieces + scoutingDataWrapper.redAllianceTotalGamePieces)
+            estimatedAccuracy = 1 - estimatedInaccuracy
+            scoutName = scoutData['scoutName']
+            if scoutName in scouterAccuraciesRaw: scouterAccuraciesRaw[scoutName].append(estimatedAccuracy)
+            else: scouterAccuraciesRaw[scoutName] = [estimatedAccuracy]
+
+for scouter in scouterAccuraciesRaw: scouterAccuraciesAvg[scouter] = sum(scouterAccuraciesRaw[scouter]) / len(scouterAccuraciesRaw[scouter])
+
+print(scouterAccuraciesAvg)
