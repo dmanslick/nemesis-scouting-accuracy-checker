@@ -21,9 +21,10 @@ scouterAccuraciesRaw = [[] for _ in range(lastMatchNum)]
 alliancePerMatchAcc = [{"blue": 0, "red": 0} for _ in range(lastMatchNum)]
 
 for data in rawScoutingData:
-    matchNum = int(data['matchNum'])
-    if (matchNum > len(scoutingData)): continue
-    scoutingData[matchNum - 1].append(data)
+    if data['teamNum'] != '' and data['matchNum'] != '':
+        matchNum = int((str(data['matchNum']).strip()))
+        if (matchNum > len(scoutingData)): continue
+        scoutingData[matchNum - 1].append(data)
 
 scoutNames = list(set(d['scoutName'] for d in rawScoutingData))
 

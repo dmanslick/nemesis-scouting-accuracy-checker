@@ -57,10 +57,12 @@ class MatchScoutingDataWrapper:
     def getAllianceTotal(self, gamePiece: str, alliance: Literal['blue', 'red']) -> int: 
         return sum(int(item[gamePiece]) for item in (self.redAllianceRawData if alliance == 'red' else self.blueAllianceRawData))
         
-    def __init__(self, redAllianceTeamNums, blueAllianceTeamNums, data): 
+    def __init__(self, redAllianceTeamNums: List, blueAllianceTeamNums: List, data): 
+        self.data = data
         self.redAllianceRawData = list(filter(lambda x: str(x['teamNum']).strip().isdigit() and int(x['teamNum']) in redAllianceTeamNums, data))
         self.blueAllianceRawData = list(filter(lambda x: str(x['teamNum']).strip().isdigit() and int(x['teamNum']) in blueAllianceTeamNums, data))
-        
+        self.teamNums = redAllianceTeamNums + blueAllianceTeamNums
+
         self.redAllianceTotalAmpAuto = self.getAllianceTotal('ampMade_atn', 'red')
         self.blueAllianceTotalAmpAuto = self.getAllianceTotal('ampMade_atn', 'blue')
 
@@ -75,3 +77,8 @@ class MatchScoutingDataWrapper:
         
         self.redAllianceTotalGamePieces = self.redAllianceTotalAmpAuto + self.redAllianceTotalSpkrAuto + self.redAllianceTotalAmpTeleop + self.redAllianceTotalSpkrTeleop
         self.blueAllianceTotalGamePieces = self.blueAllianceTotalAmpAuto + self.blueAllianceTotalSpkrAuto + self.blueAllianceTotalAmpTeleop + self.blueAllianceTotalSpkrTeleop
+
+    def getTeamTotalGamePieces(self, teamNum: int) -> int: 
+        if not (teamNum in self.teamNums): return 0
+        teamData = dict(list(filter(lambda x: str(x['teamNum']).strip().isdigit() and int(x['teamNum']) == teamNum, self.data))[0])
+        return teamData['ampMade_atn'] + teamData['spkrMade_atn'] + teamData['ampMade_tp'] + teamData['spkrMade_tp']
