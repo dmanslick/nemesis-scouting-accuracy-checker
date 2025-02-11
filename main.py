@@ -70,10 +70,10 @@ for data in scoutingData:
         except: 
             pass
 
-    # print("Match Number:", matchNum)
-    # print("Red Alliance Accuracy: " + str(round(redAllianceAccuracy * 100, 3)) + "%")
-    # print("Blue Alliance Accuracy: " +  str(round(blueAllianceAccuracy * 100, 3)) + "%")
-    # print()
+    print("Match Number:", matchNum)
+    print("Red Alliance Accuracy: " + str(round(redAllianceAccuracy * 100, 3)) + "%")
+    print("Blue Alliance Accuracy: " +  str(round(blueAllianceAccuracy * 100, 3)) + "%")
+    print()
 
 x, residuals, rank, singular_values = np.linalg.lstsq(A, b, rcond=None)
 
@@ -88,4 +88,9 @@ for i in range(len(scoutNames)):
 scouterAccuraciesEstimated.sort(key=lambda x: x['accuracy'])
 
 for estimate in scouterAccuraciesEstimated:
-    print(estimate['name'] + ':', str(estimate['accuracy']) + '%')
+    print(str(estimate['name']) + ':', str(estimate['accuracy']) + '%')
+
+# doing abs because somehow some people have negative accuracies even with the corrected formula
+avgAccuracy = np.average(list(abs(estimate['accuracy']) for estimate in scouterAccuraciesEstimated))
+
+print('Average accuracy:', str(avgAccuracy) + '%')
