@@ -3,6 +3,7 @@ import json
 import os
 from dotenv import load_dotenv # type: ignore
 from matchDataType import MatchData
+import numpy as np
 
 load_dotenv()
 
@@ -17,13 +18,21 @@ lastMatchNum = tbaWrapper.lastMatchNum
 
 scoutingData = [[] for _ in range(lastMatchNum)]
 scouterAccuraciesRaw = [[] for _ in range(lastMatchNum)]
-scouterAccuraciesAvg = {}
 alliancePerMatchAcc = [{"blue": 0, "red": 0} for _ in range(lastMatchNum)]
 
 for data in rawScoutingData:
     matchNum = int(data['matchNum'])
     if (matchNum > len(scoutingData)): continue
     scoutingData[matchNum - 1].append(data)
+
+scoutNames = list(set(d['scoutName'] for d in rawScoutingData))
+
+A = np.zeros((2*lastMatchNum, len(scoutNames)))
+
+b = np.zeros(2*lastMatchNum)
+
+def sumScoutData(scoutData): 
+    return scoutData['ampMade_atn'] + scoutData['spkrMade_atn'] + scoutData['ampMade_tp'] + scoutData['spkrMade_tp']
 
 for data in scoutingData:
     try: 
@@ -40,12 +49,42 @@ for data in scoutingData:
     
     scoutingDataWrapper = MatchScoutingDataWrapper(redAllianceTeamNums, blueAllianceTeamNums, data)
     
-    redAllianceAccuracy = scoutingDataWrapper.redAllianceTotalGamePieces / tbaWrapper.getAllianceTotalGamePieces(matchNum, 'red')
-    blueAllianceAccuracy = scoutingDataWrapper.blueAllianceTotalGamePieces / tbaWrapper.getAllianceTotalGamePieces(matchNum, 'blue')
-    
-    print(scoutingDataWrapper.redAllianceTotalAmpAuto)
-    print("Match Number:", matchNum)
-    print("Red Alliance Accuracy: " + str(round(redAllianceAccuracy * 100, 3)) + "%")
-    print("Blue Alliance Accuracy: " +  str(round(blueAllianceAccuracy * 100, 3)) + "%")
-    print()
+    redAllianceTotalGamePieces = tbaWrapper.getAllianceTotalGamePieces(matchNum, 'red')
+    blueAllianceTotalGamePieces = tbaWrapper.getAllianceTotalGamePieces(matchNum, 'blue')
 
+    redAllianceAccuracy = scoutingDataWrapper.redAllianceTotalGamePieces / redAllianceTotalGamePieces
+    blueAllianceAccuracy = scoutingDataWrapper.blueAllianceTotalGamePieces / blueAllianceTotalGamePieces
+    
+    index = (matchNum - 1) * 2
+    
+    b[index] = redAllianceTotalGamePieces
+    b[index - 1] = blueAllianceTotalGamePieces
+ 
+    for scoutData in data:
+        try: 
+            if int(scoutData['teamNum']) in redAllianceTeamNums: 
+                A[index, scoutNames.index(scoutData['scoutName'])] = sumScoutData(scoutData)
+            else: 
+                A[index + 1, scoutNames.index(scoutData['scoutName'])] = sumScoutData(scoutData)
+        except: 
+            pass
+
+    # print("Match Number:", matchNum)
+    # print("Red Alliance Accuracy: " + str(round(redAllianceAccuracy * 100, 3)) + "%")
+    # print("Blue Alliance Accuracy: " +  str(round(blueAllianceAccuracy * 100, 3)) + "%")
+    # print()
+
+x, residuals, rank, singular_values = np.linalg.lstsq(A, b, rcond=None)
+
+coefficients = x.flatten()
+
+scouterAccuraciesEstimated = []
+
+for i in range(len(scoutNames)): 
+    acc = round(1 - abs(coefficients[i] - 1), 4).item() * 100
+    scouterAccuraciesEstimated.append({'name': scoutNames[i], 'accuracy': acc})
+
+scouterAccuraciesEstimated.sort(key=lambda x: x['accuracy'])
+
+for estimate in scouterAccuraciesEstimated:
+    print(estimate['name'] + ':', str(estimate['accuracy']) + '%')
