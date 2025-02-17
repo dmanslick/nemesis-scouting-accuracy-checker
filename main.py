@@ -89,7 +89,7 @@ for i in range(len(scoutNames)):
 scouterAccuraciesEstimated.sort(key=lambda x: x['accuracy'])
 
 for estimate in scouterAccuraciesEstimated:
-    print(str(estimate['name']) + ':', str(estimate['accuracy']) + '%')
+    print(str(estimate['name']) + ':', str(estimate['accuracy'].round(2)) + '%')
 
 # doing abs because somehow some people have negative accuracies even with the corrected formula
 avgAccuracy = np.average(list(abs(estimate['accuracy']) for estimate in scouterAccuraciesEstimated)).round(2)
