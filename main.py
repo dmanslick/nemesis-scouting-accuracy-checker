@@ -66,7 +66,7 @@ for data in scoutingData:
             if int(scoutData['teamNum']) in redAllianceTeamNums: 
                 A[index, scoutNames.index(scoutData['scoutName'])] = sumScoutData(scoutData)
             else: 
-                A[index + 1, scoutNames.index(scoutData['scoutName'])] = sumScoutData(scoutData)
+                A[index - 1, scoutNames.index(scoutData['scoutName'])] = sumScoutData(scoutData)
         except: 
             pass
 
@@ -82,7 +82,7 @@ coefficients = x.flatten()
 scouterAccuraciesEstimated = []
 
 for i in range(len(scoutNames)): 
-    acc = round(1 - abs(coefficients[i] - 1), 4).item() * 100
+    acc = round(coefficients[i], 4) * 100
     scouterAccuraciesEstimated.append({'name': scoutNames[i], 'accuracy': acc})
 
 scouterAccuraciesEstimated.sort(key=lambda x: x['accuracy'])
