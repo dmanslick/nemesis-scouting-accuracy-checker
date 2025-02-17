@@ -83,6 +83,7 @@ scouterAccuraciesEstimated = []
 
 for i in range(len(scoutNames)): 
     acc = round(coefficients[i], 4) * 100
+    if acc > 100: acc = -acc + 200
     scouterAccuraciesEstimated.append({'name': scoutNames[i], 'accuracy': acc})
 
 scouterAccuraciesEstimated.sort(key=lambda x: x['accuracy'])
@@ -91,6 +92,6 @@ for estimate in scouterAccuraciesEstimated:
     print(str(estimate['name']) + ':', str(estimate['accuracy']) + '%')
 
 # doing abs because somehow some people have negative accuracies even with the corrected formula
-avgAccuracy = np.average(list(abs(estimate['accuracy']) for estimate in scouterAccuraciesEstimated))
+avgAccuracy = np.average(list(abs(estimate['accuracy']) for estimate in scouterAccuraciesEstimated)).round(2)
 
 print('Average accuracy:', str(avgAccuracy) + '%')
