@@ -15,7 +15,7 @@ class TBAWrapper:
         tbaData: List[MatchData] = tbaResponse.json()
         tbaData: List[MatchData] = list(filter(lambda match: match['comp_level'] != 'f' and match['comp_level'] != 'sf', tbaData))[::-1]
         tbaData: List[MatchData] = sorted(tbaData, key=lambda match: match["match_number"])
-        
+
         self.tbaData = tbaData
         self.tbaOPRs = tbaOPRsResponse.json()['oprs']
         self.lastMatchNum = tbaData[len(tbaData) - 1]['match_number']
@@ -56,7 +56,7 @@ class TBAWrapper:
 class MatchScoutingDataWrapper:
     def getAllianceTotal(self, gamePiece: str, alliance: Literal['blue', 'red']) -> int: 
         return sum(int(item[gamePiece]) for item in (self.redAllianceRawData if alliance == 'red' else self.blueAllianceRawData))
-        
+
     def __init__(self, redAllianceTeamNums: List, blueAllianceTeamNums: List, data): 
         self.data = data
         self.redAllianceRawData = list(filter(lambda x: str(x['teamNum']).strip().isdigit() and int(x['teamNum']) in redAllianceTeamNums, data))
